@@ -4,11 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>RIRI CONTENTT</title>
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="frontend/style.css" />
   </head>
   <script>
     async function loadProducts() {
-      const res = await fetch("https://etudpdwvaxjewqgiwoig.supabase.co/products");
+      const res = await fetch(
+        "https://etudpdwvaxjewqgiwoig.supabase.co/products"
+      );
       const products = await res.json();
 
       const container = document.querySelector(".products");
@@ -43,7 +45,10 @@
         </div>
 
         <a href="#" class="alogo"
-          ><img src="assets/logo.png" alt="RIRI CONTENTT Logo" class="logo"
+          ><img
+            src="frontend/assets/logo.jpg"
+            alt="RIRI CONTENTT Logo"
+            class="logo"
         /></a>
 
         <div class="nav-right">
@@ -63,27 +68,27 @@
     <section class="main">
       <section class="products">
         <div class="product">
-          <img src="https://picsum.photos/300/400?random=21" />
+          <img src="frontend/assets/loremimage.jpg" />
           <h3>Remera Vintage</h3>
           <p>$25.00</p>
         </div>
         <div class="product">
-          <img src="https://picsum.photos/300/300?random=22" />
+          <img src="frontend/assets/loremimage.jpg" />
           <h3>Hoodie Oversize</h3>
           <p>$40.00</p>
         </div>
         <div class="product">
-          <img src="https://picsum.photos/300/400?random=23" />
+          <img src="frontend/assets/loremimage.jpg" />
           <h3>Pantalón Cargo</h3>
           <p>$32.00</p>
         </div>
         <div class="product">
-          <img src="https://picsum.photos/300/400?random=24" />
+          <img src="frontend/assets/loremimage.jpg" />
           <h3>Remera Vintage</h3>
           <p>$25.00</p>
         </div>
         <div class="product">
-          <img src="https://picsum.photos/300/400?random=25" />
+          <img src="frontend/assets/loremimage.jpg" />
           <h3>Remera Vintage</h3>
           <p>$25.00</p>
         </div>
