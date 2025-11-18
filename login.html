@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Login Admin</title>
+  <style>
+    body{font-family:sans-serif;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;height:100vh}
+    .box{background:#222;padding:20px;border-radius:10px;width:320px}
+    input{width:100%;padding:8px;margin:8px 0;border-radius:6px;border:none}
+    button{width:100%;padding:10px;border-radius:6px;border:none;background:#fff;color:#000;font-weight:bold}
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h3>Admin Login</h3>
+    <input id="email" placeholder="Email">
+    <input id="pass" type="password" placeholder="Password">
+    <button id="loginBtn">Entrar</button>
+    <p id="msg"></p>
+  </div>
+
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+  const SUPABASE_URL = 'https://etudpdwvaxjewqgiwoig.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_bMX9R130rikeQkh1Vjh8gg_v-JxzXh5';
+  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  document.getElementById('loginBtn').onclick = async () => {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('pass').value;
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      document.getElementById('msg').innerText = error.message;
+      return;
+    }
+
+    // check role in user metadata
+    const user = data.user;
+    const role = user?.app_metadata?.role || user?.user_metadata?.role;
+    if (role !== 'admin') {
+      document.getElementById('msg').innerText = 'No sos admin.';
+      await supabase.auth.signOut();
+      return;
+    }
+
+    // redirect to admin
+    location.href = 'admin.html';
+  }
+</script>
+</body>
+</html>

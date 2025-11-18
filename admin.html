@@ -1,0 +1,121 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Panel</title>
+  <style>
+    body{font-family:sans-serif;background:#0f0f0f;color:#fff;padding:20px}
+    table{width:100%;border-collapse:collapse;margin-top:12px}
+    th,td{padding:8px;background:#1a1a1a;border-bottom:1px solid #222}
+    input,button{padding:8px;border-radius:6px;border:none}
+    button{cursor:pointer}
+    .add{background:#222;padding:12px;border-radius:10px;margin-top:12px}
+  </style>
+</head>
+<body>
+  <h1>Admin</h1>
+  <button onclick="logout()">Cerrar sesión</button>
+
+  <section>
+    <h2>Productos</h2>
+    <table id="table">
+      <thead>
+        <tr><th>ID</th><th>Nombre</th><th>Precio</th><th>Stock</th><th>Imagen</th><th>Acciones</th></tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </section>
+
+  <section class="add">
+    <h3>Agregar producto</h3>
+    <input id="p_name" placeholder="Nombre">
+    <input id="p_price" placeholder="Precio" type="number">
+    <input id="p_stock" placeholder="Stock" type="number">
+    <input id="p_image" placeholder="URL imagen">
+    <button onclick="addProduct()">Agregar</button>
+  </section>
+
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+  const SUPABASE_URL = 'https://etudpdwvaxjewqgiwoig.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_bMX9R130rikeQkh1Vjh8gg_v-JxzXh5';
+  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // comprobar si está logueado
+  (async function checkAuth(){
+    const { data } = await supabase.auth.getUser();
+    const user = data.user;
+    if (!user) location.href = 'login.html';
+
+    const role = user?.app_metadata?.role || user?.user_metadata?.role;
+    if (role !== 'admin') {
+      alert('No autorizado');
+      await supabase.auth.signOut();
+      location.href = 'login.html';
+    }
+
+    loadProducts();
+  })();
+
+  async function loadProducts(){
+    const { data, error } = await supabase.from('products').select('*').order('created_at', {ascending:false});
+    if (error) return console.error(error);
+    const tbody = document.getElementById('tbody');
+    tbody.innerHTML = '';
+    data.forEach(p => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${p.id}</td>
+        <td contenteditable="false">${p.name}</td>
+        <td>${p.price}</td>
+        <td>${p.stock}</td>
+        <td><img src="${p.image_url}" width="60"></td>
+        <td>
+          <button onclick="modStock('${p.id}',1)">+1</button>
+          <button onclick="modStock('${p.id}',-1)">-1</button>
+          <button onclick="deleteProduct('${p.id}')">Borrar</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  async function addProduct(){
+    const name = document.getElementById('p_name').value;
+    const price = document.getElementById('p_price').value;
+    const stock = parseInt(document.getElementById('p_stock').value || '0');
+    const image = document.getElementById('p_image').value;
+    const { error } = await supabase.from('products').insert([{ name, price, stock, image_url: image }]);
+    if (error) return alert('Error: ' + error.message);
+    loadProducts();
+  }
+
+  async function modStock(id, amount){
+    const { error } = await supabase.from('products').update({ stock: supabase.raw('stock + ?', [amount]) }).eq('id', id);
+    // NOTE: supabase-js doesn't support raw easily in browser; fallback:
+    if (error) {
+      // fallback: fetch current stock then update
+      const cur = await supabase.from('products').select('stock').eq('id', id).single();
+      const newStock = (cur.data.stock || 0) + amount;
+      const { error: err2 } = await supabase.from('products').update({ stock: newStock }).eq('id', id);
+      if (err2) return alert('Error: ' + err2.message);
+    }
+    loadProducts();
+  }
+
+  async function deleteProduct(id){
+    if (!confirm('Borrar producto?')) return;
+    const { error } = await supabase.from('products').delete().eq('id', id);
+    if (error) return alert('Error: ' + error.message);
+    loadProducts();
+  }
+
+  async function logout(){
+    await supabase.auth.signOut();
+    location.href = 'login.html';
+  }
+</script>
+</body>
+</html>
