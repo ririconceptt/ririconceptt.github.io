@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Panel</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #111;
+      color: white;
+      padding: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 10px;
+      background: #222;
+      border-bottom: 1px solid #333;
+    }
+    input, button {
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: none;
+    }
+    button {
+      cursor: pointer;
+      background: white;
+      color: black;
+      font-weight: bold;
+    }
+    .add-box {
+      background: #222;
+      padding: 20px;
+      border-radius: 12px;
+      margin-top: 30px;
+    }
+    .logout-btn {
+      background: #ff4444;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Panel de administración</h1>
+  <button class="logout-btn" onclick="logout()">Cerrar sesión</button>
+
+  <h2>Productos</h2>
+  <table id="table">
+    <tr>
+      <th>ID</th>
+      <th>Nombre</th>
+      <th>Precio</th>
+      <th>Imagen</th>
+      <th>Stock</th>
+      <th>Acciones</th>
+    </tr>
+  </table>
+
+  <div class="add-box">
+    <h2>Agregar producto</h2>
+
+    <input id="name" placeholder="Nombre"><br><br>
+    <input id="price" placeholder="Precio" type="number"><br><br>
+    <input id="image" placeholder="URL imagen"><br><br>
+    <input id="stock" placeholder="Stock inicial" type="number"><br><br>
+
+    <button onclick="addProduct()">Agregar</button>
+  </div>
+
+<script>
+  const API = "https://etudpdwvaxjewqgiwoig.supabase.co";
+  const token = localStorage.getItem("token");
+
+//   if (!token) location.href = "login.html";
+
+  async function load() {
+    const res = await fetch(API + "/products");
+    const data = await res.json();
+
+    const table = document.getElementById("table");
+
+    table.innerHTML = `
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Precio</th>
+        <th>Imagen</th>
+        <th>Stock</th>
+        <th>Acciones</th>
+      </tr>
+    `;
+
+    data.forEach(p => {
+      table.innerHTML += `
+        <tr>
+          <td>${p.id}</td>
+          <td>${p.name}</td>
+          <td>$${p.price}</td>
+          <td><img src="${p.image}" width="60"></td>
+          <td>${p.stock}</td>
+          <td>
+            <button onclick="modStock(${p.id}, 1)">+1</button>
+            <button onclick="modStock(${p.id}, -1)">-1</button>
+            <button onclick="delProduct(${p.id})" style="background:#ff4444;color:white">Borrar</button>
+          </td>
+        </tr>
+      `;
+    });
+  }
+
+  async function addProduct() {
+    await fetch(API + "/products", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({
+        name: name.value,
+        price: price.value,
+        image: image.value,
+        stock: stock.value
+      })
+    });
+    load();
+  }
+
+  async function modStock(id, amount) {
+    await fetch(API + "/products/" + id + "/stock", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({ amount })
+    });
+    load();
+  }
+
+  async function delProduct(id) {
+    await fetch(API + "/products/" + id, {
+      method: "DELETE",
+      headers: { "Authorization": "Bearer " + token }
+    });
+    load();
+  }
+
+  function logout() {
+    localStorage.removeItem("token");
+    location.href = "login.html";
+  }
+
+  load();
+</script>
+
+</body>
+</html>
