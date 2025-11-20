@@ -38,6 +38,7 @@
       <section class="hero">
         <div class="hero-title">NUEVO DROP DISPONIBLE</div>
         <button>NUESTROS PRODUCTOS</button>
+        <button id="bg-test-btn" title="Click para cambiar el fondo">Probar fondo</button>
       </section>
     </section>
 
@@ -148,6 +149,17 @@
       };
 
       // cargar al inicio
+      // boton de prueba para ciclar background
+      const _bgColors = ["#feffff", "#f8d0d0", "#fbe7e7", "#138c8c"];
+      let _bgIndex = -1; // empezamos en -1 para que al primer click vaya al primero
+      const _bgBtn = document.getElementById("bg-test-btn");
+      if (_bgBtn) {
+        _bgBtn.addEventListener("click", () => {
+          _bgIndex = (_bgIndex + 1) % _bgColors.length;
+          document.body.style.backgroundColor = _bgColors[_bgIndex];
+        });
+      }
+
       loadProducts();
     </script>
   </body>

@@ -4,9 +4,13 @@
   box-sizing: border-box;
 
   --bordo: #8C1414;
+  --lightbordo: #e96565;
+  --darkbordo: #460909;
+  --antibordo: #138c8c;
 }
 body {
   font-family: sans-serif;
+  background: var(--antibordo);
 }
 
 /* TOP BAR */
