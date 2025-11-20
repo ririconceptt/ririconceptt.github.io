@@ -47,14 +47,14 @@
   (async function checkAuth(){
     const { data } = await supabase.auth.getUser();
     const user = data.user;
-    if (!user) location.href = 'login.html';
+    // if (!user) location.href = 'login.html';
 
-    const role = user?.app_metadata?.role || user?.user_metadata?.role;
-    if (role !== 'admin') {
-      alert('No autorizado');
-      await supabase.auth.signOut();
-      location.href = 'login.html';
-    }
+    // const role = user?.app_metadata?.role || user?.user_metadata?.role;
+    // if (role !== 'admin') {
+    //   alert('No autorizado');
+    //   await supabase.auth.signOut();
+    //   location.href = 'login.html';
+    // }
 
     loadProducts();
   })();

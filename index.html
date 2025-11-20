@@ -1,57 +1,81 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Tu Tienda</title>
+
     <link rel="stylesheet" href="frontend/style.css" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
   </head>
+
   <body>
-    <section class="header">
-      <div class="top-bar">SHIPS SAME OR NEXT BUSINESS DAY</div>
+    <!-- MOBILE HEADER (Nude Project Style) -->
+    <header class="header-mobile">
+      <div class="menu-btn" id="menu-btn">
+        <span></span><span></span><span></span>
+      </div>
 
-      <header>
-        <div class="nav-left">
-          <a href="#">SALE</a>
-          <a href="#">REMERAS</a>
-          <a href="#">TOPS</a>
-          <a href="#">PANTALONES</a>
-          <a href="#">INVIERNO</a>
-        </div>
+      <img src="frontend/assets/logo.png" class="logo-mobile" />
 
-        <a href="#" class="alogo"
-          ><img
-            src="frontend/assets/logo.png"
-            alt="RIRI CONTENTT Logo"
-            class="logo"
-        /></a>
+      <div class="right-icons">
+        <i class="fa-regular fa-user"></i>
+      </div>
+    </header>
 
-        <div class="nav-right">
-          <a href="login.html">ADMIN</a>
-        </div>
-      </header>
+    <!-- OVERLAY -->
+    <div class="menu-overlay" id="menu-overlay"></div>
 
-      <section class="hero">
-        <div class="hero-title">NUEVO DROP DISPONIBLE</div>
-        <button>NUESTROS PRODUCTOS</button>
-      </section>
+    <!-- MOBILE SLIDE MENU -->
+    <nav class="mobile-menu" id="mobile-menu">
+      <ul>
+        <li><a href="#">Inicio</a></li>
+        <li><a href="#products">Productos</a></li>
+        <li><a href="#">Ofertas</a></li>
+        <li><a href="#">Contacto</a></li>
+      </ul>
+    </nav>
+
+    <!-- DESKTOP HEADER -->
+    <header class="header-desktop">
+      <div class="nav-left">
+        <a href="#">SALE</a>
+        <a href="#">REMERAS</a>
+        <a href="#">TOPS</a>
+        <a href="#">PANTALONES</a>
+        <a href="#">INVIERNO</a>
+      </div>
+
+      <a href="#" class="alogo">
+        <img src="frontend/assets/logo.png" class="logo" />
+      </a>
+
+      <div class="nav-right">
+        <a href="login.html">ADMIN</a>
+      </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-title">NUEVO DROP DISPONIBLE</div>
+      <a href="#products"> NUESTROS PRODUCTOS</a>
     </section>
 
+    <!-- PRODUCT LIST -->
     <main>
-      <section class="products" id="products">
-        <!-- productos se renderizan acá -->
-      </section>
+      <section class="products" id="products"></section>
     </main>
 
+    <!-- SUPABASE + RENDER PRODUCTS -->
     <script type="module">
       import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
       const SUPABASE_URL = "https://oioxhdxbjnoeguefahsa.supabase.co";
-      const SUPABASE_KEY = "sb_publishable_B-k68Xa3Bf6vtTAmfi96Iw_MVzv6G8T";
+      const SUPABASE_KEY =
+        "sb_publishable_B-k68Xa3Bf6vtTAmfi96Iw_MVzv6G8T";
       const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
       const productsEl = document.getElementById("products");
@@ -63,7 +87,6 @@
           .order("created_at", { ascending: false });
 
         if (error) {
-          console.error(error);
           productsEl.innerHTML = "<p>Error cargando productos.</p>";
           return;
         }
@@ -71,37 +94,38 @@
         productsEl.innerHTML = products
           .map(
             (p) => `
-        <article class="product">
-          <img src="${
-            p.image_url || "https://picsum.photos/300/400?random=1"
-          }" alt="${p.name}" />
-          <h3 class="name">${p.name}</h3>
+          <article class="product-card">
+            <div class="img-container">
+              <img src="${p.image_url || "https://picsum.photos/500"}" alt="${p.name}">
+            </div>
 
-          <p class="price">$${Number(p.price).toFixed(2)}</p>
-          <div class="actions">
-            <button onclick="buyWhatsApp('${p.id}','${encodeURIComponent(
+            <h3>${p.name}</h3>
+
+            <p class="price">$${Number(p.price).toFixed(2)}</p>
+
+            <button class="buy-btn" onclick="
+              buyWhatsApp('${p.id}', '${encodeURIComponent(
               p.name
-            )}',${p.price})"><i class="fa-brands fa-whatsapp"></i></button>
-          </div>
-        </article>
-      `
+            )}', ${p.price})
+            ">
+              <i class='fa-brands fa-whatsapp'></i> Comprar
+            </button>
+          </article>
+        `
           )
           .join("");
       }
 
-      // Funcion para crear orden (inserta en orders -> trigger baja stock)
       async function createOrder(product_id, quantity, name, contact) {
-        // calcular total
-        const prod = (
-          await supabase
-            .from("products")
-            .select("price")
-            .eq("id", product_id)
-            .single()
-        ).data;
-        const total = Number(prod.price) * quantity;
+        const prod = await supabase
+          .from("products")
+          .select("price")
+          .eq("id", product_id)
+          .single();
 
-        const { data, error } = await supabase.from("orders").insert([
+        const total = Number(prod.data.price) * quantity;
+
+        return await supabase.from("orders").insert([
           {
             product_id,
             quantity,
@@ -110,46 +134,38 @@
             customer_contact: contact || "whatsapp",
           },
         ]);
-
-        return { data, error };
       }
 
-      // boton que abre WA y crea la orden
       window.buyWhatsApp = async function (productId, productName, price) {
-        // abrir una modal simple para pedir nombre/telefono? para simplificar:
         const name = prompt("Tu nombre (opcional)");
-        const phone = prompt("Tu WhatsApp (ej: 54911xxxx)");
+        const phone = prompt("WhatsApp (ej: 54911...)");
 
-        if (!phone) {
-          alert("Se requiere teléfono para generar el mensaje.");
-          return;
-        }
+        if (!phone) return alert("Necesitás dejar un teléfono!");
 
-        // intentamos crear la orden (esto decrementa stock via trigger)
-        const { data, error } = await createOrder(productId, 1, name, phone);
+        const { error } = await createOrder(productId, 1, name, phone);
         if (error) {
-          alert("No se pudo generar la orden: " + (error.message || error));
-          console.error(error);
+          alert("Error creando orden");
           return;
         }
 
         const text = `Hola! Quiero comprar ${decodeURIComponent(
           productName
         )}. Nombre: ${name || ""}. ${phone}`;
-        const wa = `https://wa.me/${phone.replace(
-          /\D/g,
-          ""
-        )}?text=${encodeURIComponent(text)}`;
-        window.open(wa, "_blank");
 
-        // recargar productos para ver stock actualizado
+        window.open(
+          `https://wa.me/${phone.replace(/\D/g, "")}?text=${encodeURIComponent(
+            text
+          )}`,
+          "_blank"
+        );
+
         loadProducts();
-        console.log(data);
       };
-
-      // cargar al inicio
 
       loadProducts();
     </script>
+
+    <!-- MOBILE MENU SCRIPT -->
+    <script src="frontend/script.js"></script>
   </body>
 </html>
