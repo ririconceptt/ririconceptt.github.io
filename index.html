@@ -1,13 +1,17 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Tu Tienda</title>
-  <link rel="stylesheet" href="frontend/style.css">
-</head>
-<body>
-  <section class="header">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Tu Tienda</title>
+    <link rel="stylesheet" href="frontend/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <section class="header">
       <div class="top-bar">SHIPS SAME OR NEXT BUSINESS DAY</div>
 
       <header>
@@ -20,7 +24,10 @@
         </div>
 
         <a href="#" class="alogo"
-          ><img src="frontend/assets/logo.png" alt="RIRI CONTENTT Logo" class="logo"
+          ><img
+            src="frontend/assets/logo.png"
+            alt="RIRI CONTENTT Logo"
+            class="logo"
         /></a>
 
         <div class="nav-right">
@@ -34,92 +41,114 @@
       </section>
     </section>
 
-  <main>
-    <section class="products" id="products">
-      <!-- productos se renderizan acá -->
-    </section>
-  </main>
+    <main>
+      <section class="products" id="products">
+        <!-- productos se renderizan acá -->
+      </section>
+    </main>
 
-  <script type="module">
-    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+    <script type="module">
+      import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-    const SUPABASE_URL = 'https://oioxhdxbjnoeguefahsa.supabase.co';
-    const SUPABASE_KEY = 'sb_secret_QJSxFfqnVlKbUT-cnY7bZg_JwzPVOqj';
-    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+      const SUPABASE_URL = "https://oioxhdxbjnoeguefahsa.supabase.co";
+      const SUPABASE_KEY = "sb_publishable_B-k68Xa3Bf6vtTAmfi96Iw_MVzv6G8T";
+      const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const productsEl = document.getElementById('products');
+      const productsEl = document.getElementById("products");
 
-    async function loadProducts(){
-      const { data: products, error } = await supabase
-        .from('products')
-        .select('*')
-        .order('created_at', {ascending: false});
+      async function loadProducts() {
+        const { data: products, error } = await supabase
+          .from("products")
+          .select("*")
+          .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error(error);
-        productsEl.innerHTML = '<p>Error cargando productos.</p>';
-        return;
-      }
+        if (error) {
+          console.error(error);
+          productsEl.innerHTML = "<p>Error cargando productos.</p>";
+          return;
+        }
 
-      productsEl.innerHTML = products.map(p => `
+        productsEl.innerHTML = products
+          .map(
+            (p) => `
         <article class="product">
-          <img src="${p.image_url || 'https://picsum.photos/300/400?random=1'}" alt="${p.name}" />
-          <h3>${p.name}</h3>
+          <img src="${
+            p.image_url || "https://picsum.photos/300/400?random=1"
+          }" alt="${p.name}" />
+          <h3 class="name">${p.name}</h3>
+
           <p class="price">$${Number(p.price).toFixed(2)}</p>
-          <p class="stock">Stock: ${p.stock}</p>
           <div class="actions">
-            <button onclick="buyWhatsApp('${p.id}','${encodeURIComponent(p.name)}',${p.price})">Comprar por WhatsApp</button>
+            <button onclick="buyWhatsApp('${p.id}','${encodeURIComponent(
+              p.name
+            )}',${p.price})"><i class="fa-brands fa-whatsapp"></i></button>
           </div>
         </article>
-      `).join('');
-    }
-
-    // Funcion para crear orden (inserta en orders -> trigger baja stock)
-    async function createOrder(product_id, quantity, name, contact){
-      // calcular total
-      const prod = (await supabase.from('products').select('price').eq('id', product_id).single()).data;
-      const total = Number(prod.price) * quantity;
-
-      const { data, error } = await supabase.from('orders').insert([{
-        product_id,
-        quantity,
-        total_price: total,
-        customer_name: name || 'Cliente',
-        customer_contact: contact || 'whatsapp'
-      }]);
-
-      return { data, error };
-    }
-
-    // boton que abre WA y crea la orden
-    window.buyWhatsApp = async function(productId, productName, price){
-      // abrir una modal simple para pedir nombre/telefono? para simplificar:
-      const name = prompt('Tu nombre (opcional)');
-      const phone = prompt('Tu WhatsApp (ej: 54911xxxx)');
-
-      if (!phone) {
-        alert('Se requiere teléfono para generar el mensaje.');
-        return;
+      `
+          )
+          .join("");
       }
 
-      // intentamos crear la orden (esto decrementa stock via trigger)
-      const { data, error } = await createOrder(productId, 1, name, phone);
-      if (error) {
-        alert('No se pudo generar la orden: ' + (error.message || error));
-        console.error(error);
-        return;
+      // Funcion para crear orden (inserta en orders -> trigger baja stock)
+      async function createOrder(product_id, quantity, name, contact) {
+        // calcular total
+        const prod = (
+          await supabase
+            .from("products")
+            .select("price")
+            .eq("id", product_id)
+            .single()
+        ).data;
+        const total = Number(prod.price) * quantity;
+
+        const { data, error } = await supabase.from("orders").insert([
+          {
+            product_id,
+            quantity,
+            total_price: total,
+            customer_name: name || "Cliente",
+            customer_contact: contact || "whatsapp",
+          },
+        ]);
+
+        return { data, error };
       }
 
-      const text = `Hola! Quiero comprar ${decodeURIComponent(productName)}. Nombre: ${name || ''}. ${phone}`;
-      const wa = `https://wa.me/${phone.replace(/\D/g,'')}?text=${encodeURIComponent(text)}`;
-      window.open(wa, '_blank');
+      // boton que abre WA y crea la orden
+      window.buyWhatsApp = async function (productId, productName, price) {
+        // abrir una modal simple para pedir nombre/telefono? para simplificar:
+        const name = prompt("Tu nombre (opcional)");
+        const phone = prompt("Tu WhatsApp (ej: 54911xxxx)");
 
-      // recargar productos para ver stock actualizado
+        if (!phone) {
+          alert("Se requiere teléfono para generar el mensaje.");
+          return;
+        }
+
+        // intentamos crear la orden (esto decrementa stock via trigger)
+        const { data, error } = await createOrder(productId, 1, name, phone);
+        if (error) {
+          alert("No se pudo generar la orden: " + (error.message || error));
+          console.error(error);
+          return;
+        }
+
+        const text = `Hola! Quiero comprar ${decodeURIComponent(
+          productName
+        )}. Nombre: ${name || ""}. ${phone}`;
+        const wa = `https://wa.me/${phone.replace(
+          /\D/g,
+          ""
+        )}?text=${encodeURIComponent(text)}`;
+        window.open(wa, "_blank");
+
+        // recargar productos para ver stock actualizado
+        loadProducts();
+        console.log(data);
+      };
+
+      // cargar al inicio
       loadProducts();
-    }
-
-    // cargar al inicio
-    loadProducts();
-  </script>
-</body>
+    </script>
+  </body>
 </html>

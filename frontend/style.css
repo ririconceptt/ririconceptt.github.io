@@ -183,7 +183,25 @@ header a:hover::after {
   font-weight: 600;
 }
 .product .price {
-  color: #e91e63;
+  color: var(--bordo);
   font-weight: 700;
   margin-top: 8px;
+}
+
+.actions button {
+  background-color: #25D366;
+  border: none;
+  border-radius: 10px;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  margin-top: 15px;
+  padding: 10px;
+  cursor: pointer;
+  color: white;
+}
+
+.fa-whatsapp {
+  font-size: 25px;
 }
