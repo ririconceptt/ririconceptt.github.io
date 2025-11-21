@@ -74,8 +74,7 @@
       import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
       const SUPABASE_URL = "https://oioxhdxbjnoeguefahsa.supabase.co";
-      const SUPABASE_KEY =
-        "sb_publishable_B-k68Xa3Bf6vtTAmfi96Iw_MVzv6G8T";
+      const SUPABASE_KEY = "sb_publishable_B-k68Xa3Bf6vtTAmfi96Iw_MVzv6G8T";
       const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
       const productsEl = document.getElementById("products");
@@ -97,7 +96,12 @@
             (p) => `
           <article class="product-card">
             <div class="img-container">
-              <img src="${p.image_url || "https://picsum.photos/300/400"}" alt="${p.name}">
+              <img src="${
+                p.image_url ||
+                "frontend/assets/product_img/" +
+                  (Math.floor(Math.random() * 6) + 1) +
+                  ".jpg"
+              }" alt="${p.name}">
             </div>
 
             <h3>${p.name}</h3>
@@ -158,11 +162,18 @@
 
         const productNameDecoded = decodeURIComponent(productName || "");
         const priceNumber = Number(price) || 0;
-        const formattedPrice = priceNumber.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const formattedPrice = priceNumber.toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
 
-        const text = `Hola! Quisiera comprar *${productNameDecoded}* (ID: ${productId}).\nNombre: ${name || "-"}\nPrecio: $${formattedPrice}\nPor favor, escribime para coordinar.`;
+        const text = `Hola! Quisiera comprar *${productNameDecoded}* (ID: ${productId}).\nNombre: ${
+          name || "-"
+        }\nPrecio: $${formattedPrice}\nPor favor, escribime para coordinar.`;
 
-        const waUrl = `https://wa.me/3878644023?text=${encodeURIComponent(text)}`;
+        const waUrl = `https://wa.me/3878644023?text=${encodeURIComponent(
+          text
+        )}`;
         window.open(waUrl, "_blank");
 
         loadProducts();
