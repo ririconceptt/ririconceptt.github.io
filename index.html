@@ -81,6 +81,7 @@
       const productsEl = document.getElementById("products");
 
       async function loadProducts() {
+        productsEl.innerHTML = "<p>Cargando productos...</p>";
         const { data: products, error } = await supabase
           .from("products")
           .select("*")
@@ -91,7 +92,7 @@
           return;
         }
 
-        productsEl.innerHTML = products
+        productsEl.innerHTML = (products || [])
           .map(
             (p) => `
           <article class="product-card">
@@ -104,9 +105,9 @@
             <p class="price">$${Number(p.price).toFixed(2)}</p>
 
             <button class="buy-btn" onclick="
-              buyWhatsApp('${p.id}', '${encodeURIComponent(
-              p.name
-            )}', ${p.price})
+              buyWhatsApp('${p.id}', '${encodeURIComponent(p.name)}', ${Number(
+              p.price
+            )})
             ">
               <i class='fa-brands fa-whatsapp'></i> Comprar
             </button>
@@ -123,7 +124,11 @@
           .eq("id", product_id)
           .single();
 
-        const total = Number(prod.data.price) * quantity;
+        if (prod.error || !prod.data) {
+          return { error: prod.error || { message: "Producto no encontrado" } };
+        }
+
+        const total = Number(prod.data.price || 0) * quantity;
 
         return await supabase.from("orders").insert([
           {
@@ -142,22 +147,23 @@
 
         if (!phone) return alert("Necesitás dejar un teléfono!");
 
-        const { error } = await createOrder(productId, 1, name, phone);
+        const phoneDigits = phone.replace(/\D/g, "");
+        if (phoneDigits.length < 7) return alert("Número inválido");
+
+        const { error } = await createOrder(productId, 1, name, phoneDigits);
         if (error) {
           alert("Error creando orden");
           return;
         }
 
-        const text = `Hola! Quiero comprar ${decodeURIComponent(
-          productName
-        )}. Nombre: ${name || ""}. ${phone}`;
+        const productNameDecoded = decodeURIComponent(productName || "");
+        const priceNumber = Number(price) || 0;
+        const formattedPrice = priceNumber.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-        window.open(
-          `https://wa.me/${phone.replace(/\D/g, "")}?text=${encodeURIComponent(
-            text
-          )}`,
-          "_blank"
-        );
+        const text = `Hola! Quisiera comprar *${productNameDecoded}* (ID: ${productId}).\nNombre: ${name || "-"}\nPrecio: $${formattedPrice}\nPor favor, escribime para coordinar.`;
+
+        const waUrl = `https://wa.me/3878644023?text=${encodeURIComponent(text)}`;
+        window.open(waUrl, "_blank");
 
         loadProducts();
       };
