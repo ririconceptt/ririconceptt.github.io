@@ -77,7 +77,7 @@ body {
   inset: 0;
   opacity: 0;
   transition: 0.3s;
-  z-index: 9998;
+  z-index: -1;
   background: transparent;
   /* backdrop-filter: blur(2px); */
   pointer-events: auto;
@@ -86,6 +86,12 @@ body {
 .menu-overlay.show {
   opacity: 1;
   pointer-events: auto;
+  z-index: 9998;
+}
+ /* TODO */
+.menu-overlay.show .hero {
+  pointer-events: none;
+  display: none;
 }
 
 /* Slide Menu */
